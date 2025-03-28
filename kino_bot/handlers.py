@@ -57,6 +57,7 @@ def register_handlers(dp: Dispatcher):
     @dp.message(Command("search"))
     async def search_video_command(message: types.Message):
         """Video qidirish"""
+        keyboard = get_subscription_keyboard()
         if await check_subscription(message.bot, message.from_user.id):
             args = message.text.split()
             if len(args) < 2:
