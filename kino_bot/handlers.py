@@ -57,19 +57,22 @@ def register_handlers(dp: Dispatcher):
     @dp.message(Command("search"))
     async def search_video_command(message: types.Message):
         """Video qidirish"""
-        args = message.text.split()
-        if len(args) < 2:
-            await message.answer("Iltimos, /search VIDEO_CODE formatida kiriting.")
-            return
-        
-        video_code = args[1]
-        video_file_id = get_video(video_code)
-        
-        if video_file_id:
-            async with ChatActionSender.upload_video(bot=message.bot, chat_id=message.chat.id):
-                await message.answer_video(video_file_id, caption="Mana siz so'ragan video!")
+        if await check_subscription(message.bot, message.from_user.id):
+            args = message.text.split()
+            if len(args) < 2:
+                await message.answer("Iltimos, /search VIDEO_CODE formatida kiriting.")
+                return
+            
+            video_code = args[1]
+            video_file_id = get_video(video_code)
+            
+            if video_file_id:
+                async with ChatActionSender.upload_video(bot=message.bot, chat_id=message.chat.id):
+                    await message.answer_video(video_file_id, caption="Mana siz so'ragan video!")
+            else:
+                await message.answer("Kechirasiz, bunday kodga ega video topilmadi.")
         else:
-            await message.answer("Kechirasiz, bunday kodga ega video topilmadi.")
+            await message.answer("Botimizga xush kelibsiz!. Botdan foydalanish uchun kanalga obuna bo'ling:", reply_markup=keyboard)
 
     @dp.message(Command("add_video"))
     async def add_video_command(message: types.Message, state: FSMContext):
