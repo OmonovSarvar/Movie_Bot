@@ -6,6 +6,26 @@ __pycache__/
 # C extensions
 *.so
 
+# Virtual environment'lar
+venv/
+env/
+Lib/
+Include/
+Scripts/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Maxfiy fayllar
+.env
+config.json
+secrets.json
+
+# IDE fayllari
+.vscode/
+.idea/
+
 # Distribution / packaging
 .Python
 build/
