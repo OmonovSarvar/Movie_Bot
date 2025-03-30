@@ -2,31 +2,34 @@ import asyncio
 import logging
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiohttp import web
+import os
+
 from config import BOT_TOKEN
 from database import create_db
 from handlers import register_handlers, register_start_handler
 from middlewares import CheckSubscriptionMiddleware
-from aiohttp import web
-import os
 
 # Logging sozlamalari
 logging.basicConfig(level=logging.INFO)
 
 # Bot va Dispatcher
-dp = Dispatcher(storage=MemoryStorage())
 bot = Bot(token=BOT_TOKEN)
+dp = Dispatcher(storage=MemoryStorage())
 
 async def handle_request(request):
-    """Telegram webhook ma'lumotlarini qabul qilish"""
-    update = await request.json()
-    await dp.feed_webhook_update(bot, update)
-    return web.Response()
+    try:
+        update = await request.json()
+        await dp.feed_webhook_update(bot, update)
+        return web.Response(text="OK")
+    except Exception as e:
+        logging.error(f"Xatolik: {e}")
+        return web.Response(status=500, text="Xatolik yuz berdi")
 
 def setup_middlewares():
-    """Middlewarelarni o'rnatish"""
     dp.update.middleware(CheckSubscriptionMiddleware())
 
-async def main():
+async def on_startup():
     logging.info("Bot ishga tushmoqda...")
     create_db()
     setup_middlewares()
@@ -34,16 +37,27 @@ async def main():
     register_start_handler(dp)
 
     # Webhook URL
-    WEBHOOK_URL = f"https://{os.environ.get('https://movie-bot-i2lc.onrender.com')}/webhook"
+    WEBHOOK_HOST = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "https://movie-bot-i2lc.onrender.com")
+    WEBHOOK_URL = f"https://{WEBHOOK_HOST}/webhook"
 
-    # Webhook o‘rnatish
+    logging.info(f"Webhook o‘rnatilmoqda: {WEBHOOK_URL}")
     await bot.set_webhook(WEBHOOK_URL)
 
-    # Web serverni boshlash
+async def on_shutdown():
+    logging.info("Webhook o‘chirilmoqda...")
+    await bot.delete_webhook()
+
+async def main():
+    await on_startup()
+
+    # Web server yaratish
     app = web.Application()
     app.router.add_post("/webhook", handle_request)
 
+    # Port sozlash
     PORT = int(os.environ.get("PORT", 8080))
+
+    logging.info(f"Server {PORT}-portda ishlamoqda...")
     return app, PORT
 
 if __name__ == "__main__":
