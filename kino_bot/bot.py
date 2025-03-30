@@ -34,7 +34,7 @@ async def main():
     register_start_handler(dp)
 
     # Webhook URL
-    WEBHOOK_URL = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/webhook"
+    WEBHOOK_URL = f"https://{os.environ.get('https://movie-bot-i2lc.onrender.com')}/webhook"
 
     # Webhook o‘rnatish
     await bot.set_webhook(WEBHOOK_URL)
