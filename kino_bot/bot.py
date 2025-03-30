@@ -6,6 +6,7 @@ from config import BOT_TOKEN
 from database import create_db
 from handlers import register_handlers, register_start_handler
 from middlewares import CheckSubscriptionMiddleware
+import os
 
 # Logging sozlamalari
 logging.basicConfig(level=logging.INFO)
@@ -21,6 +22,7 @@ def setup_middlewares():
 async def main():
     """Asosiy ishga tushirish funksiyasi"""
     logging.info("Bot ishga tushmoqda...")
+    os.environ.get("PORT", 8080)
     create_db()  # Ma'lumotlar bazasini yaratish
     setup_middlewares()
     register_handlers(dp)# Handlerlarni ro‘yxatga olish
